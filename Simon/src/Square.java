@@ -10,14 +10,14 @@ public class Square {
 
     private int x, y;
     private Color color;
-    private boolean hover, cpuPlaying;
+    private boolean hover, playing;
     private MediaPlayer player;
 
     public Square(int xPos, int yPos, Color col, String noteStr) {
         x = xPos; y = yPos;
         color = col;
         hover = false;
-        cpuPlaying = false;
+        playing = false;
         player = makePlayer(noteStr);
     }
 
@@ -31,37 +31,38 @@ public class Square {
     public void show(GraphicsContext gc) {
         gc.setFill(Color.BLACK);
         gc.fillRect(x, y, SIZE, SIZE);
-        if (hover || cpuPlaying) gc.setFill(color.brighter());
+        if (hover || playing) gc.setFill(color.brighter());
         else gc.setFill(color);
         gc.fillRect(x+10, y+10, SIZE-20, SIZE-20);
     }
 
     public void playSound() {
-        cpuPlaying = true;
+        playing = true;
         player.play();
-        player.seek(player.getStartTime());
     }
 
     // Receives coords of mouse
     public void checkHover(double mx, double my) {
-        if (x < mx && (x+SIZE) > mx && y < my && (y+SIZE) > my) {
-            hover = true;
-        } else {
-            hover = false;
-        }
+        hover = x < mx && (x+SIZE) > mx && y < my && (y+SIZE) > my;
     }
 
     // Receives coords of mouse click
-    public void checkClick(double mx, double my) {
-        if (x < mx && (x+SIZE) > mx && y < my && (y+SIZE) > my) {
-            playSound();
+    public boolean checkClick(double mx, double my) {
+        if (!playing) {
+            if (x < mx && (x+SIZE) > mx && y < my && (y+SIZE) > my) {
+                playSound();
+                return true;
+            }
         }
+        return false;
     }
 
     public void checkPlayback() {
-        if (cpuPlaying) {
-            if (player.getCurrentTime().equals(player.getStopTime())) {
-                cpuPlaying = false;
+        if (playing) {
+            if (player.getCurrentTime().toMillis() >= player.getStopTime().toMillis()) {
+                playing = false;
+                player.seek(player.getStartTime());
+                player.pause();
             }
         }
     }
